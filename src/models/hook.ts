@@ -22,7 +22,7 @@ export default class Hook<State> {
    * @param action Action name.
    * @param state A state to pass in callback.
    */
-  public run(action: string, state: Readonly<State>) {
+  public run(state: Readonly<State>) {
     this.$$callback(state, !this.$$called);
     this.$$called = true;
   }

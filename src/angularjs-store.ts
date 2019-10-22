@@ -15,6 +15,8 @@ export type HookActionQuery<Actions extends string[] = string[]> =
   | Array<Actions[number] | '*'>
   | RegExp;
 
+type StateFactory<T> = (prevState: T) => Partial<T>;
+
 export default class NgStore<State extends { [key: string]: any } = {}, Actions extends string[] = string[]> {
   private $$stateHolder: StateHolder<State>;
 
@@ -99,7 +101,7 @@ export default class NgStore<State extends { [key: string]: any } = {}, Actions 
     this.$$hooks.push(hook);
 
     // Initial run of hook.
-    hook.run('', this.$$stateHolder.get(), true);
+    hook.run(this.$$stateHolder.get());
 
     return new HookLink(() => {
       this.$$hooks.splice(this.$$hooks.indexOf(hook), 1);
@@ -118,13 +120,15 @@ export default class NgStore<State extends { [key: string]: any } = {}, Actions 
    * @param action Action name.
    * @param setState State setter.
    */
-  public dispatch(action: Actions[number], setState: (prevState: State) => Partial<State>): void;
+  public dispatch(action: Actions[number], setState: StateFactory<State>): void;
 
   /**
    * Implementation.
    */
-  public dispatch(action: Actions[number], state: Partial<State> | ((prevState: State) => Partial<State>)) {
-    const partialState = angular.isFunction(state) ? state(this.$$stateHolder.get()) : state;
+  public dispatch(action: Actions[number], state: Partial<State> | StateFactory<State>) {
+    const partialState: Partial<State> = angular.isFunction(state)
+      ? (state as StateFactory<State>)(this.$$stateHolder.get())
+      : (state as Partial<State>);
 
     /* istanbul ignore next */
     if (__DEV__) {
@@ -144,10 +148,9 @@ export default class NgStore<State extends { [key: string]: any } = {}, Actions 
     const newState = this.$$stateHolder.get();
 
     this.$$hooks
-      .filter(hook => hook.matches(action))
-      .forEach(hook => {
-        hook.run(action, newState);
+      .filter((hook) => hook.matches(action))
+      .forEach((hook) => {
+        hook.run(newState);
       });
-    }
   }
 }
