@@ -21,14 +21,11 @@ export default class Hook<State> {
    * Run the registered callback when action passed to matcher.
    * @param action Action name.
    * @param state A state to pass in callback.
-   * @param force Ignore the action checking and run the callback forcely. Disabled by default.
    */
-  public run(action: string, state: Readonly<State>, force = false) {
-    if (!force && !this.$$match(action)) {
-      return;
-    }
-
+  public run(action: string, state: Readonly<State>) {
     this.$$callback(state, !this.$$called);
     this.$$called = true;
   }
+
+  public matches = (action: string) => this.$$match(action);
 }

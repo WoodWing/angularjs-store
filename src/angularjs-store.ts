@@ -140,8 +140,14 @@ export default class NgStore<State extends { [key: string]: any } = {}, Actions 
 
     this.$$stateHolder.set(partialState);
 
-    for (const hook of this.$$hooks) {
-      hook.run(action, this.$$stateHolder.get());
+    // Only create one copy of the state for all hooks for performance reasons, hooks should never modify the passed state object
+    const newState = this.$$stateHolder.get();
+
+    this.$$hooks
+      .filter(hook => hook.matches(action))
+      .forEach(hook => {
+        hook.run(action, newState);
+      });
     }
   }
 }

@@ -13,37 +13,27 @@ beforeEach(() => {
 
 describe('Hook', () => {
   describe('run', () => {
-    it('should call the callback when action passed to matcher', () => {
-      hook.run('TEST_ACTION', state);
+    it('should run the callback', () => {
+      hook.run(state);
       expect(callback).toHaveBeenCalledTimes(1);
     });
 
-    it('should not call the callback when action doesn\'t passed in matcher', () => {
-      hook.run('FOO_ACTION', state);
-      hook.run('BAR_ACTION', state);
-      hook.run('BAZ_ACTION', state);
-      expect(callback).not.toHaveBeenCalled();
-    });
-
-    it('should call the callback when force option enabled even when action doesn\'t passed to matcher', () => {
-      hook.run('', state, true);
-      expect(callback).toHaveBeenCalledTimes(1);
-    });
-
-    it('should not call the matcher when force option enabled', () => {
-      hook.run('', state, true);
-      expect(matcher).not.toHaveBeenCalled();
+    it('should check whether action matches the hook', () => {
+      expect(hook.matches('TEST_ACTION')).toBeTruthy();
+      expect(hook.matches('FOO_ACTION')).toBeFalsy();
+      expect(hook.matches('BAR_ACTION')).toBeFalsy();
+      expect(hook.matches('BAZ_ACTION')).toBeFalsy();
     });
 
     it('should call the callback with state and true on the first run', () => {
-      hook.run('TEST_ACTION', state);
+      hook.run(state);
       expect(callback).toHaveBeenCalledWith(state, true);
     });
 
     it('should call the callback with state and false on the second run and so forth', () => {
-      hook.run('TEST_ACTION', state);
+      hook.run(state);
       for (let i = 0; i < 9; i++) {
-        hook.run('TEST_ACTION', state);
+        hook.run(state);
         expect(callback).toHaveBeenCalledWith(state, false);
       }
     });
